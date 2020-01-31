@@ -1,0 +1,40 @@
+﻿@using Blazor.Extensions;
+@using Blazor.Extensions.Canvas.Canvas2D;
+@using Microsoft.AspNetCore.Components;
+@using System.Threading.Tasks;
+
+@page "/"
+
+<BECanvas Width="_canvasWidth" Height="_canvasHeight" @ref="_canvasReference"></BECanvas>
+
+@code {
+    private int _canvasHeight = 800;
+    private int _canvasWidth = 1600;
+
+    private Canvas2DContext _context;
+
+    protected BECanvasComponent _canvasReference;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        this._context = await this._canvasReference.CreateCanvas2DAsync();
+
+        var bifurcator = new BlazorBifurcations.Calculations.Bifurcator(0.5, 200, 4);
+        var results = bifurcator.CalculateOverFertility(0, 4, 0.005);
+        await this._context.SetFillStyleAsync("white");
+        await this._context.SetLineWidthAsync(0.01F);
+        await this._context.BeginPathAsync();
+        await this._context.MoveToAsync(0, 800);
+
+        foreach (var result in results)
+        {
+            foreach (var point in result.Value)
+            {
+                await this._context.LineToAsync(result.Key * 300, 600 - point * 300);
+                await this._context.FillRectAsync(result.Key * 300, 600 - (point * 300), 2, 2);
+            }
+        }
+
+        await this._context.ClosePathAsync();
+    }
+}
