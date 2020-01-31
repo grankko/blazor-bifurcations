@@ -19,8 +19,8 @@
     {
         this._context = await this._canvasReference.CreateCanvas2DAsync();
 
-        var bifurcator = new BlazorBifurcations.Calculations.Bifurcator(0.5, 200, 4);
-        var results = bifurcator.CalculateOverFertility(0, 4, 0.005);
+        var bifurcator = new BlazorBifurcations.Calculations.Bifurcator(0.5, 500, 4);
+        var results = bifurcator.CalculateOverFertility(0, 4, 0.002);
         await this._context.SetFillStyleAsync("white");
         await this._context.SetLineWidthAsync(0.01F);
         await this._context.BeginPathAsync();
