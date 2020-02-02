@@ -25,30 +25,11 @@ namespace BlazorBifurcations.Calculations
         }
 
         /// <summary>
-        /// Calculates stable values of x(n+1) = r*x(n)*(1-x(n)) for all conditions between <paramref name="startFertility"/> and <paramref name="endFertility"/>
-        /// when fertility is incremented by <paramref name="increment"/>.
+        /// Finds stable values for a given <paramref name="fertility"/> in x(n+1) = r*x(n)*(1-x(n)).
         /// </summary>
-        public Dictionary<double, double[]> CalculateOverFertility(double startFertility, double endFertility, double increment)
+        public CalculationStepResults Calculate(double fertility)
         {
-            var result = new Dictionary<double, double[]>();
-            var currentFertility = startFertility;
-
-            while (currentFertility <= endFertility)
-            {
-                currentFertility = Math.Round(currentFertility, _acceptansDepth);
-                result.Add(currentFertility, Calculate(currentFertility));
-                currentFertility += increment;
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Finds stable values for a given <paramref name="fertility"/>.
-        /// </summary>
-        public double[] Calculate(double fertility)
-        {
-            var results = new List<double>();
+            var results = new CalculationStepResults(fertility);
 
             Dictionary<int, double> calculatedGenerations = new Dictionary<int, double>();
             calculatedGenerations.Add(0, _initialPopulation);
@@ -73,16 +54,16 @@ namespace BlazorBifurcations.Calculations
                     double traversedValue = calculatedGenerations[lastGeneration];
                     
                     if (traversedValue == nextGeneration)
-                        results.Add(traversedValue); // The first value that repeats, should be part of the result
+                        results.StableValues.Add(traversedValue); // The first value that repeats, should be part of the result
 
                     while (traversedValue != nextGeneration)
                     {
                         // Step backwards in calculated values, add to result until we hit the first repeating value in the set
-                        results.Add(calculatedGenerations[lastGeneration]);
+                        results.StableValues.Add(calculatedGenerations[lastGeneration]);
                         lastGeneration--;
                         traversedValue = calculatedGenerations[lastGeneration];
                         if (traversedValue == nextGeneration)
-                            results.Add(traversedValue);
+                            results.StableValues.Add(traversedValue);
                     }
 
                 }
@@ -94,8 +75,8 @@ namespace BlazorBifurcations.Calculations
                     boundriesFound = true; // Give up, this is not going to repeat for the given fertility..
             }
 
-            return results.ToArray();
+            return results;
 
-        }        
+        } 
     }
 }

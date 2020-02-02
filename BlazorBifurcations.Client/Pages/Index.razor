@@ -1,40 +1,33 @@
-﻿@using Blazor.Extensions;
-@using Blazor.Extensions.Canvas.Canvas2D;
-@using Microsoft.AspNetCore.Components;
+﻿@using Microsoft.AspNetCore.Components;
 @using System.Threading.Tasks;
+@using System.Threading;
+@using BlazorBifurcations.Calculations;
+@using BlazorBifurcations.Client.Services;
+@inject DiagramService ClientDiagramService
 
 @page "/"
-
-<BECanvas Width="_canvasWidth" Height="_canvasHeight" @ref="_canvasReference"></BECanvas>
+<div>
+    <canvas id="diagramCanvas" width="1800" height="800"></canvas>
+</div>
+<footer>
+    <span>Fertility: @ClientDiagramService.CurrentFertility</span>
+</footer>
 
 @code {
-    private int _canvasHeight = 800;
-    private int _canvasWidth = 1600;
 
-    private Canvas2DContext _context;
-
-    protected BECanvasComponent _canvasReference;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnInitialized()
     {
-        this._context = await this._canvasReference.CreateCanvas2DAsync();
+        ClientDiagramService.StateChanged += OnStateChanged;
+        ClientDiagramService.Start();
+    }
 
-        var bifurcator = new BlazorBifurcations.Calculations.Bifurcator(0.5, 500, 4);
-        var results = bifurcator.CalculateOverFertility(0, 4, 0.002);
-        await this._context.SetFillStyleAsync("white");
-        await this._context.SetLineWidthAsync(0.01F);
-        await this._context.BeginPathAsync();
-        await this._context.MoveToAsync(0, 800);
+    protected void OnStateChanged(object sender, EventArgs e)
+    {
+        this.StateHasChanged();
+    }
 
-        foreach (var result in results)
-        {
-            foreach (var point in result.Value)
-            {
-                await this._context.LineToAsync(result.Key * 300, 600 - point * 300);
-                await this._context.FillRectAsync(result.Key * 300, 600 - (point * 300), 2, 2);
-            }
-        }
-
-        await this._context.ClosePathAsync();
+    protected void startCalculation()
+    {
+        ClientDiagramService.Start();
     }
 }

@@ -4,15 +4,60 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>BlazorBifurcations.Client</title>
+    <title>Logistic Map</title>
     <base href="/" />
     <link href="css/site.css" rel="stylesheet" />
     <script src="_content/Blazor.Extensions.Canvas/blazor.extensions.canvas.js"></script>
 </head>
 
 <body>
-    <app>Calculating...</app>
+    <app>Loading...</app>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script>
+        // Interop from Blazor to JS to clear canvas
+        function clearCanvas(canvasId) {
+            var canvas = document.getElementById(canvasId);
+            var canvasContext = canvas.getContext("2d");
+            canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+            return true; // hack
+        }
+
+        // Interop from Blazor to JS
+        function drawOnCanvas(canvasId, x, y, pixelSize) {
+            var canvas = document.getElementById(canvasId);
+            var canvasContext = canvas.getContext("2d");
+            canvasContext.beginPath();
+            canvasContext.lineWidth = pixelSize;
+            canvasContext.strokeStyle = "white";
+            canvasContext.rect(x, y, pixelSize, pixelSize);
+            canvasContext.stroke();
+            return true; // hack
+        }
+
+        // Interop from Blazor to JS
+        function drawAllOnCanvas(canvasId, x, y, pixelSize) {
+            var canvas = document.getElementById(canvasId);
+            var canvasContext = canvas.getContext("2d");
+            canvasContext.beginPath();
+            canvasContext.lineWidth = "1";
+            canvasContext.strokeStyle = "white";
+
+            for (var i = 0; i < x.length; i++) {
+                canvasContext.rect(x[i], y[i], pixelSize, pixelSize);
+            }
+            canvasContext.stroke();
+
+            return true; // hack
+        }
+
+        // sad hack because I cant get binding to work..
+        function updateElementInnerHtml(id, text) {
+            var element = document.getElementById(id);
+            element.innerHtml = text;
+            return true;
+        }
+
+    </script>
 </body>
 
 </html>
