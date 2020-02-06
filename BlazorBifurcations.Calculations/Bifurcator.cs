@@ -10,7 +10,7 @@ namespace BlazorBifurcations.Calculations
         private readonly double _initialPopulation;
         private readonly int _calculationDepth;
         private readonly int _acceptansDepth;
-
+        
         /// <summary>
         /// It bifurcates..
         /// </summary>
@@ -30,53 +30,54 @@ namespace BlazorBifurcations.Calculations
         public CalculationStepResults Calculate(double fertility)
         {
             var results = new CalculationStepResults(fertility);
-
-            Dictionary<int, double> calculatedGenerations = new Dictionary<int, double>();
-            calculatedGenerations.Add(0, _initialPopulation);
+            Stack<double> calculatedGenerationPopulations = new Stack<double>();
+            calculatedGenerationPopulations.Push(_initialPopulation);
 
             var boundriesFound = false;
-            var generationsCalculated = 0;
+            var noOfCalculatedGenerations = 0;
+
             while (!boundriesFound)
             {
-                var previousGeneration = calculatedGenerations[generationsCalculated];
-                
+                var previousGenerationPopulation = calculatedGenerationPopulations.Peek();
+
                 // Get next value in the set based on previous generation
-                var nextGeneration = previousGeneration * fertility * (1 - previousGeneration);
-                nextGeneration = Math.Round(nextGeneration, _acceptansDepth);
+                var nextGenerationPopulation = previousGenerationPopulation * fertility * (1 - previousGenerationPopulation);
+                nextGenerationPopulation = Math.Round(nextGenerationPopulation, _acceptansDepth);
 
                 // If we find a value that is present in a previous generation, we've found a repeating pattern
-                if (calculatedGenerations.Values.Contains(nextGeneration))
+                if (calculatedGenerationPopulations.Contains(nextGenerationPopulation))
                 {
                     boundriesFound = true;
-
-                    // Collect all values from the end of the results until we hit the repeating pattern
-                    var lastGeneration = generationsCalculated;
-                    double traversedValue = calculatedGenerations[lastGeneration];
-                    
-                    if (traversedValue == nextGeneration)
-                        results.StableValues.Add(traversedValue); // The first value that repeats, should be part of the result
-
-                    while (traversedValue != nextGeneration)
-                    {
-                        // Step backwards in calculated values, add to result until we hit the first repeating value in the set
-                        results.StableValues.Add(calculatedGenerations[lastGeneration]);
-                        lastGeneration--;
-                        traversedValue = calculatedGenerations[lastGeneration];
-                        if (traversedValue == nextGeneration)
-                            results.StableValues.Add(traversedValue);
-                    }
-
+                    results.StableValues.AddRange(ExtractStableValuesFromSetWithRepeatingPattern(calculatedGenerationPopulations, nextGenerationPopulation));
                 }
 
-                calculatedGenerations.Add(generationsCalculated + 1, nextGeneration);
-                generationsCalculated++;
+                calculatedGenerationPopulations.Push(nextGenerationPopulation);
 
-                if (generationsCalculated >= _calculationDepth)
+                noOfCalculatedGenerations++;
+                if (noOfCalculatedGenerations >= _calculationDepth)
                     boundriesFound = true; // Give up, this is not going to repeat for the given fertility..
             }
 
             return results;
+        }
 
-        } 
+        /// <summary>
+        /// Extracts repeating pattern of values in <paramref name="calculatedGenerations"/>
+        /// </summary>
+        /// <param name="calculatedGenerations">Set of values with a repeating pattern.</param>
+        /// <returns></returns>
+        public static double[] ExtractStableValuesFromSetWithRepeatingPattern(Stack<double> calculatedGenerations, double firstRepeatingValue)
+        {
+            var stableValues = new List<double>();
+            var patternFound = false;
+            while (!patternFound)
+            {
+                stableValues.Add(calculatedGenerations.Pop());
+                if (stableValues.Contains(firstRepeatingValue))
+                    patternFound = true;
+            }
+
+            return stableValues.ToArray();
+        }
     }
 }
