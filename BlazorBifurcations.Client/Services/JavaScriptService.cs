@@ -20,14 +20,9 @@ namespace BlazorBifurcations.Client.Services
             _jsRuntime.InvokeAsync<bool>("clearCanvas", elementId);
         }
 
-        public void DrawCellOnCanvas(string elementId, double x, double y, double cellSize)
+        public void DrawCellOnCanvas(string elementId, double x, double y, double cellSize, string color)
         {
-            _jsRuntime.InvokeAsync<bool>("drawOnCanvas", elementId, x, y, cellSize);
-        }
-
-        public void DrawCellsOnCanvas(string elementId, IEnumerable<int> xCoordinates, IEnumerable<int> yCoordinates, int cellSize)
-        {
-            _jsRuntime.InvokeAsync<bool>("drawAllOnCanvas", elementId, xCoordinates, yCoordinates, cellSize);
+            _jsRuntime.InvokeAsync<bool>("drawOnCanvas", elementId, x, y, cellSize, color);
         }
 
         public void ResizeCanvas(string elementId)

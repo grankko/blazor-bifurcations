@@ -42,7 +42,7 @@ namespace BlazorBifurcations.Calculations
 
                 // Get next value in the set based on previous generation
                 var nextGenerationPopulation = previousGenerationPopulation * fertility * (1 - previousGenerationPopulation);
-                nextGenerationPopulation = Math.Round(nextGenerationPopulation, _acceptansDepth);
+                nextGenerationPopulation = Math.Round(nextGenerationPopulation, _acceptansDepth, MidpointRounding.ToEven);
 
                 // If we find a value that is present in a previous generation, we've found a repeating pattern
                 if (calculatedGenerationPopulations.Contains(nextGenerationPopulation))

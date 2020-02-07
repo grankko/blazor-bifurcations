@@ -9,31 +9,26 @@ namespace BlazorBifurcations.Client.Services
 {
     public class DiagramService
     {
-        private readonly double _increment = 0.002;
-        private readonly double _endFertility = 4;
-        private readonly double _initialPopulation = 0.5;
         private readonly double _canvasCellSize = 0.1;
-        private readonly int _calculationDepth = 500;
-        private readonly int _acceptansDepth = 4;
         private readonly int _zoomLevel = 400;
         private readonly int _yOffset = 600;
-        private readonly int _repaintInterval = 50;
+        private readonly int _repaintInterval = 50; // Number of calculations to perform before updating diagram
 
-        private Bifurcator _bifurcator;
-        private Timer _timer;        
+        private CalculationService _calculationService;
         private readonly JavaScriptService _javaScriptService;
+        private Timer _timer;
 
-        public List<CalculationStepResults> Results { get; private set; }
-        public double CurrentFertility { get; private set; }
-        public DiagramService(JavaScriptService javaScriptService)
+        public string CurrentFertility { get { return _calculationService.CurrentFertility.ToString("0.00"); } }
+        public List<CalculationStepResults> Results { get { return _calculationService.Results; } }
+
+        public DiagramService(JavaScriptService javaScriptService, CalculationService calculationService)
         {
-            CurrentFertility = 0;
-            Results = new List<CalculationStepResults>();
+            _javaScriptService = javaScriptService;
+            _calculationService = calculationService;
 
-            _bifurcator = new Bifurcator(_initialPopulation, _calculationDepth, _acceptansDepth);
             _timer = new Timer(1);
             _timer.Elapsed += OnTimerElapsed;
-            _javaScriptService = javaScriptService;
+
         }
 
         public event EventHandler StateChanged;
@@ -43,40 +38,63 @@ namespace BlazorBifurcations.Client.Services
             _timer.Start();
         }
 
+        /// <summary>
+        /// Calculates and draws diagram in steps
+        /// </summary>
         protected void OnTimerElapsed(object sender, ElapsedEventArgs e)
         {
 
-            if (CurrentFertility < _endFertility)
+            for (int i = 0; i < _repaintInterval; i++)
             {
-                for (int i = 0; i < _repaintInterval; i++)
+                bool isDone = _calculationService.CalculateStep();
+
+                if (isDone)
                 {
-                    var result = _bifurcator.Calculate(CurrentFertility);
-                    CurrentFertility += _increment;
-                    CurrentFertility = Math.Round(CurrentFertility, _acceptansDepth);
-                    Results.Add(result);
+                    _timer.Stop();
+                    break;
                 }
-
-                DrawResults();
-                StateChanged?.Invoke(this, EventArgs.Empty);
-
             }
-            else
-            {
-                _timer.Stop();
-            }
+
+            DrawResults();
+            StateChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void DrawResults()
         {
+            int generation = 0;
+            Queue<int> lastPeriods = new Queue<int>();
+
             foreach (var result in Results)
             {
-                double x = (result.Fertility * _zoomLevel);
+                string periodColorRepresentation = "#FFFFFF";
 
+                // Calculate average period over past 10 results and use for color coding.
+                // Naive attempt at correcting precision errors by using average.
+                lastPeriods.Enqueue(result.Period);
+                if (generation > 10)
+                    lastPeriods.Dequeue();
+
+                var averageTrailingPeriod = (int)lastPeriods.Average();
+
+                // Color code diagram by period
+                if (averageTrailingPeriod >= 2 && averageTrailingPeriod < 4)
+                    periodColorRepresentation = "#FF6666";
+                else if (averageTrailingPeriod >= 4 && averageTrailingPeriod < 8)
+                    periodColorRepresentation = "#66FF66";
+                else if (averageTrailingPeriod >= 8 && averageTrailingPeriod < 16)
+                    periodColorRepresentation = "#6666FF";
+                else if (averageTrailingPeriod >= 16)
+                    periodColorRepresentation = "#FFFF66";
+
+                // Draw diagram on canvas
+                double x = (result.Fertility * _zoomLevel);                
                 foreach (var stableValue in result.StableValues)
                 {
                     double y = _yOffset - (stableValue * _zoomLevel);
-                    _javaScriptService.DrawCellOnCanvas("diagramCanvas", x, y, _canvasCellSize);
+                    _javaScriptService.DrawCellOnCanvas("diagramCanvas", x, y, _canvasCellSize, periodColorRepresentation);
                 }
+
+                generation++;
             }
         }
     }
