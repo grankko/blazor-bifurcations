@@ -11,7 +11,7 @@ namespace BlazorBifurcations.Client.Services
     {
         private readonly double _canvasCellSize = 0.1;
         private readonly int _zoomLevel = 400;
-        private readonly int _yOffset = 600;
+        private readonly int _yOffset = 450;
         private readonly int _repaintInterval = 50; // Number of calculations to perform before updating diagram
 
         private CalculationService _calculationService;
@@ -87,7 +87,7 @@ namespace BlazorBifurcations.Client.Services
                     periodColorRepresentation = "#FFFF66";
 
                 // Draw diagram on canvas
-                double x = (result.Fertility * _zoomLevel);                
+                double x = ((result.Fertility - CalculationService.StartFertility) * _zoomLevel);           
                 foreach (var stableValue in result.StableValues)
                 {
                     double y = _yOffset - (stableValue * _zoomLevel);
