@@ -9,8 +9,10 @@ namespace BlazorBifurcations.Calculations
     /// </summary>
     public class CalculationService
     {
+        public const double StartFertility = 0.9;
+        public const double EndFertility = 4;
+
         private const double Increment = 0.002;
-        private const double EndFertility = 4;
         private const double InitialPopulation = 0.5;
         private const int CalculationDepth = 500;
         private const int AcceptansDepth = 4;
@@ -27,7 +29,7 @@ namespace BlazorBifurcations.Calculations
 
         public void Reset()
         {
-            CurrentFertility = 0;
+            CurrentFertility = StartFertility;
             Results = new List<CalculationStepResults>();
             _bifurcator = new Bifurcator(InitialPopulation, CalculationDepth, AcceptansDepth);
         }
