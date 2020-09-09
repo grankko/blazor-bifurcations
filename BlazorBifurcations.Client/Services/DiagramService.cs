@@ -9,7 +9,7 @@ namespace BlazorBifurcations.Client.Services
 {
     public class DiagramService
     {
-        private readonly double _canvasCellSize = 0.1;
+        private readonly double _canvasCellSize = 0.2;
         private readonly int _zoomLevel = 400;
         private readonly int _yOffset = 600;
         private readonly int _repaintInterval = 50; // Number of calculations to perform before updating diagram

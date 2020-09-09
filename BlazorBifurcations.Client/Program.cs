@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
-using Microsoft.AspNetCore.Blazor.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using BlazorBifurcations.Calculations;
 using BlazorBifurcations.Client.Services;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace BlazorBifurcations.Client
 {
