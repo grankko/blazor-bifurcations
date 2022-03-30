@@ -5,4 +5,4 @@ and plots them in a graph over *r*
   
   https://en.wikipedia.org/wiki/Bifurcation_diagram
 
-https://stress.granaker.se
+https://bifurcation.granaker.se
